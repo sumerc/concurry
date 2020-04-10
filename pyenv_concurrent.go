@@ -20,6 +20,8 @@ type Config struct {
 var config Config
 
 // RunCmd TODO: Comment
+// Note: log.Println() functions are goroutine safe. There is mutex involved when
+// write() is called.
 func RunCmd(name string, arg ...string) string {
 
 	realCmd := fmt.Sprintf("'%s %s'", name, strings.Join(arg, " "))
