@@ -12,10 +12,10 @@ import (
 
 // RunCmd TODO: Comment
 func RunCmd(name string, arg ...string) string {
+	fmt.Println(fmt.Sprintf("Running command '%s %s'", name, strings.Join(arg, " ")))
+
 	cmd := exec.Command(name, arg...)
 	out, err := cmd.CombinedOutput()
-
-	fmt.Println(fmt.Sprintf("Running command '%s %s'", name, strings.Join(arg, " ")))
 
 	if err != nil {
 		log.Fatalf("Fatal err: %s [%s]\n", out, err)
@@ -41,6 +41,16 @@ func GetPyVersions() []string {
 	return result
 }
 
+func runPythonCmd(wg *sync.WaitGroup, version string, cmd string) {
+	defer wg.Done()
+
+	majorVersion := version[:3]
+	pyExecutable := fmt.Sprintf("python%s", majorVersion)
+
+	out := RunCmd(pyExecutable, strings.Split(cmd, " ")...)
+	fmt.Println(out)
+}
+
 func main() {
 	var wg sync.WaitGroup
 
@@ -51,6 +61,7 @@ func main() {
 	// } else {
 
 	cmdPtr := flag.String("cmd", "", "pass the command that will run in Python interpreter. e.x: setup.py install")
+	concurrentPtr := flag.Bool("concurrent", true, "bool that defines to run the command concurrently or not")
 	flag.Parse()
 
 	if *cmdPtr == "" {
@@ -68,31 +79,16 @@ func main() {
 	fmt.Println(out)
 
 	// clean first
-	RunCmd("rm", "-Rf", "build/")
-	RunCmd("rm", "-Rf", "dist/")
+	// RunCmd("rm", "-Rf", "build/")
+	// RunCmd("rm", "-Rf", "dist/")
 
 	wg.Add(len(pyVersions))
 	for _, pyVersion := range pyVersions {
-		go func(version string) {
-			defer wg.Done()
-
-			majorVersion := version[:3]
-			pyExecutable := fmt.Sprintf("python%s", majorVersion)
-			buildDir := fmt.Sprintf("/tmp/python%s", majorVersion)
-
-			// out := RunCmd(pyExecutable, strings.Split(*cmdPtr, " ")...)
-			// fmt.Println(out)
-
-			out := RunCmd(pyExecutable, "setup.py", "clean")
-			fmt.Println(out)
-
-			out = RunCmd(pyExecutable, "setup.py", "build", "-b", buildDir, "install")
-			fmt.Println(out)
-
-			out = RunCmd(pyExecutable, "run_tests.py")
-			fmt.Println(out)
-
-		}(pyVersion)
+		if *concurrentPtr {
+			go runPythonCmd(&wg, pyVersion, *cmdPtr)
+		} else {
+			runPythonCmd(&wg, pyVersion, *cmdPtr)
+		}
 	}
 
 	wg.Wait()
