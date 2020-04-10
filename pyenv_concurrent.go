@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"log"
 	"os/exec"
@@ -43,20 +44,28 @@ func GetPyVersions() []string {
 func main() {
 	var wg sync.WaitGroup
 
-	pyVersions := GetPyVersions()
-	//var pyVersions = []string{"3.5.9", "3.6.10", "3.9.0a4"}
-	//var pyVersions = []string{"3.5.9", "3.6.10", "3.9.0a4"}
+	var pyVersions []string
 
-	// pyVersionsStr := strings.Join(pyVersions, " ")
-	// fmt.Println("Pyenv versions=", pyVersionsStr)
+	// if len(os.Args) > 1 {
+	// 	pyVersions = os.Args[1:]
+	// } else {
+
+	cmdPtr := flag.String("cmd", "", "pass the command that will run in Python interpreter. e.x: setup.py install")
+	flag.Parse()
+
+	if *cmdPtr == "" {
+		log.Fatalf("Fatal err: cmd is not passed\n")
+	}
+
+	//fmt.Println("cmd=", *cmdPtr)
+
+	pyVersions = GetPyVersions()
 
 	// prepend local at the start of versions
 	cmdSuffix := append([]string{"local"}, pyVersions...)
 
 	out := RunCmd("pyenv", cmdSuffix...)
 	fmt.Println(out)
-
-	return
 
 	// clean first
 	RunCmd("rm", "-Rf", "build/")
@@ -70,6 +79,9 @@ func main() {
 			majorVersion := version[:3]
 			pyExecutable := fmt.Sprintf("python%s", majorVersion)
 			buildDir := fmt.Sprintf("/tmp/python%s", majorVersion)
+
+			// out := RunCmd(pyExecutable, strings.Split(*cmdPtr, " ")...)
+			// fmt.Println(out)
 
 			out := RunCmd(pyExecutable, "setup.py", "clean")
 			fmt.Println(out)
