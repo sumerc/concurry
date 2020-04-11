@@ -112,7 +112,7 @@ func main() {
 		if *config.concurrent {
 			go RunCmd(command, &wg)
 		} else {
-			RunCmd(command, nil)
+			RunCmd(command, &wg)
 		}
 	}
 
