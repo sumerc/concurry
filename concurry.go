@@ -22,12 +22,17 @@ var config Config
 // RunCmd TODO: Comment
 // Note: log.Println() functions are goroutine safe. There is mutex involved when
 // write() is called.
-func RunCmd(name string, arg ...string) string {
+func RunCmd(command string, wg *sync.WaitGroup) string {
+	if wg != nil {
+		defer wg.Done()
+	}
 
-	realCmd := fmt.Sprintf("'%s %s'", name, strings.Join(arg, " "))
-	log.Println("Executing ", realCmd)
+	//arg := strings.Split(command, " ")
 
-	cmd := exec.Command(name, arg...)
+	//realCmd := fmt.Sprintf("'%s %s'", name, strings.Join(arg, " "))
+	log.Println("Executing ", command)
+
+	cmd := exec.Command("bash", "-c", command)
 	out, err := cmd.CombinedOutput()
 
 	// if exitError, ok := err.(*exec.ExitError); ok {
@@ -36,10 +41,10 @@ func RunCmd(name string, arg ...string) string {
 
 	outStr := string(out)
 	if err != nil {
-		log.Println(fmt.Sprintf("Command %s failed.", realCmd))
+		log.Println(fmt.Sprintf("Command %s failed.", command))
 		log.Println(outStr)
 	} else {
-		log.Println(fmt.Sprintf("Command %s succeeded.", realCmd))
+		log.Println(fmt.Sprintf("Command %s succeeded.", command))
 
 		if *config.display_output {
 			log.Println(outStr)
@@ -49,19 +54,11 @@ func RunCmd(name string, arg ...string) string {
 	return outStr
 }
 
-func RunCmdConcurrent(wg *sync.WaitGroup, command string) string {
-	defer wg.Done()
-
-	commandArr := strings.Split(command, " ")
-
-	return RunCmd(commandArr[0], commandArr[1:]...)
-}
-
 // GetPyVersions TODO: Comment
 func GetPyVersions() []string {
 	var result = []string{}
 
-	out := RunCmd("pyenv", "versions", "--bare")
+	out := RunCmd("pyenv versions --bare", nil)
 
 	scanner := bufio.NewScanner(strings.NewReader(out))
 	for scanner.Scan() {
@@ -86,39 +83,36 @@ func main() {
 	flag.Parse()
 
 	if *config.cmd == "" {
-		log.Fatalf("Fatal err: cmd is not passed\n")
+		flag.Usage()
+		return
 	}
 
 	commands := []string{}
 	if *config.pyenv {
 		// Set pyenv local interpreters
 		pyVersions = GetPyVersions()
-		cmdSuffix := append([]string{"local"}, pyVersions...) // prepend
-		RunCmd("pyenv", cmdSuffix...)
+
+		RunCmd(fmt.Sprintf("pyenv local %s", strings.Join(pyVersions, " ")), nil)
 
 		// Generate commands
-
 		for _, pyVersion := range pyVersions {
 			pyExecutable := fmt.Sprintf("python%s", pyVersion[:3])
-			commands = append(commands, fmt.Sprintf("%s %s", pyExecutable, *config.cmd))
+			cmd := strings.ReplaceAll(*config.cmd, "python", pyExecutable)
+			commands = append(commands, cmd)
 		}
 	} else {
-		commands = strings.Split(*config.cmd, "|")
-	}
-
-	// make sure no unnecessary whitespace exists
-	for i := range commands {
-		commands[i] = strings.TrimSpace(commands[i])
+		commands = strings.Split(*config.cmd, ";")
 	}
 
 	wg.Add(len(commands))
 	for _, command := range commands {
+		// make sure no unnecessary whitespace exists
+		command = strings.TrimSpace(command)
 
-		//fmt.Println(commandArr[0], commandArr[1:])
 		if *config.concurrent {
-			go RunCmdConcurrent(&wg, command)
+			go RunCmd(command, &wg)
 		} else {
-			RunCmdConcurrent(&wg, command)
+			RunCmd(command, nil)
 		}
 	}
 
