@@ -5,34 +5,40 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"os"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/mitchellh/go-ps"
 )
 
 type Config struct {
-	cmd            *string
-	concurrent     *bool
+	//cmd            *string
 	display_output *bool
-	pyenv          *bool
+	verbose        *bool
 }
 
 var config Config
+var parentProcessName string
 
 // RunCmd TODO: Comment
 // Note: log.Println() functions are goroutine safe. There is mutex involved when
 // write() is called.
 func RunCmd(command string, wg *sync.WaitGroup) string {
-	if wg != nil {
-		defer wg.Done()
+	defer wg.Done()
+
+	var cmd *exec.Cmd
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+		if *config.verbose {
+			log.Println("Executing '", parentProcessName, "-c", command, "'")
+		}
+
+		cmd = exec.Command(parentProcessName, "-c", command)
+	} else {
+		// TODO: Windows Invoke is different?
 	}
-
-	//arg := strings.Split(command, " ")
-
-	//realCmd := fmt.Sprintf("'%s %s'", name, strings.Join(arg, " "))
-	log.Println("Executing ", command)
-
-	cmd := exec.Command("bash", "-c", command)
 	out, err := cmd.CombinedOutput()
 
 	// if exitError, ok := err.(*exec.ExitError); ok {
@@ -44,7 +50,9 @@ func RunCmd(command string, wg *sync.WaitGroup) string {
 		log.Println(fmt.Sprintf("Command %s failed.", command))
 		log.Println(outStr)
 	} else {
-		log.Println(fmt.Sprintf("Command %s succeeded.", command))
+		if *config.verbose {
+			log.Println(fmt.Sprintf("Command %s succeeded.", command))
+		}
 
 		if *config.display_output {
 			log.Println(outStr)
@@ -54,65 +62,35 @@ func RunCmd(command string, wg *sync.WaitGroup) string {
 	return outStr
 }
 
-// GetPyVersions TODO: Comment
-func GetPyVersions() []string {
-	var result = []string{}
-
-	out := RunCmd("pyenv versions --bare", nil)
-
-	scanner := bufio.NewScanner(strings.NewReader(out))
-	for scanner.Scan() {
-		pyVersion := strings.Trim(scanner.Text(), " ")
-		if strings.HasPrefix(pyVersion, "3") || strings.HasPrefix(pyVersion, "2") {
-			result = append(result, pyVersion)
-		}
-	}
-
-	return result
-}
-
 func main() {
 	var wg sync.WaitGroup
 
-	var pyVersions []string
-
-	config.cmd = flag.String("cmd", "", "command to be run")
-	config.concurrent = flag.Bool("concurrent", true, "control running command concurrently")
-	config.display_output = flag.Bool("display-stdout", false, "control displaying command output")
-	config.pyenv = flag.Bool("pyenv", false, "control running commands in supported pyenv interpreters")
+	// TODO: Ability to set custom shell
+	//config.cmd = flag.String("cmd", "", "command to be run")
+	config.display_output = flag.Bool("o", false, "control displaying command output")
+	config.verbose = flag.Bool("v", true, "control showing executed commands and return values")
 	flag.Parse()
 
-	if *config.cmd == "" {
-		flag.Usage()
-		return
+	reader := bufio.NewReader(os.Stdin)
+	command, err := reader.ReadString('\n')
+	if err != nil {
+		log.Fatalf("Stdin could not be read. [%s]", err)
 	}
 
-	commands := []string{}
-	if *config.pyenv {
-		// Set pyenv local interpreters
-		pyVersions = GetPyVersions()
-
-		RunCmd(fmt.Sprintf("pyenv local %s", strings.Join(pyVersions, " ")), nil)
-
-		// Generate commands
-		for _, pyVersion := range pyVersions {
-			pyExecutable := fmt.Sprintf("python%s", pyVersion[:3])
-			cmd := strings.ReplaceAll(*config.cmd, "python", pyExecutable)
-			commands = append(commands, cmd)
-		}
-	} else {
-		commands = strings.Split(*config.cmd, ";")
+	// get parent process name
+	process, err := ps.FindProcess(os.Getppid())
+	if err != nil {
+		log.Fatalf("No Parent PID. [%s]", err)
 	}
+	parentProcessName = process.Executable()
 
-	wg.Add(len(commands))
+	commands := strings.Split(command, ";")
+
 	for _, command := range commands {
-		// make sure no unnecessary whitespace exists
 		command = strings.TrimSpace(command)
-
-		if *config.concurrent {
+		if len(command) > 0 {
+			wg.Add(1)
 			go RunCmd(command, &wg)
-		} else {
-			RunCmd(command, &wg)
 		}
 	}
 
