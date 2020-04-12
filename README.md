@@ -32,5 +32,13 @@ python3.9 run_tests.py;
 Feed above output to concurry:
 
 ```bash
-»  pyenv-matrix.sh "python run_tests.py" | concurry
+»  pyenv-matrix.sh "python run_tests.py" | concurry -v
+2020/04/12 21:13:47 Executing ' zsh -c python3.9 run_tests.py '
+2020/04/12 21:13:47 Executing ' zsh -c python3.5 run_tests.py '
+2020/04/12 21:13:47 Executing ' zsh -c python2.7 run_tests.py '
+2020/04/12 21:13:47 Executing ' zsh -c python3.6 run_tests.py '
+2020/04/12 21:13:47 Command python2.7 run_tests.py succeeded.
+2020/04/12 21:13:47 Command python3.9 run_tests.py succeeded.
+2020/04/12 21:13:47 Command python3.5 run_tests.py succeeded.
+2020/04/12 21:13:47 Command python3.6 run_tests.py succeeded.
 ```

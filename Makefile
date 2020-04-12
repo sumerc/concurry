@@ -12,4 +12,5 @@ clean:
 
 install:
 	cp $(BINARY_NAME) /usr/bin/$(BINARY_NAME)
+	cp pyenv-matrix /usr/bin/pyenv-matrix
 .PHONY: install
