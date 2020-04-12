@@ -22,7 +22,8 @@ to initialize and run the given command in all pyenv versions available in the s
 3.5.9
 3.6.10
 3.9.0a4
-»  ./pyenv-matrix.sh "python run_tests.py"
+»  pyenv local $(pyenv versions --bare)
+»  pyenv-matrix "python run_tests.py"
 python2.7 run_tests.py;
 python3.5 run_tests.py;
 python3.6 run_tests.py;
@@ -32,7 +33,7 @@ python3.9 run_tests.py;
 Feed above output to concurry:
 
 ```bash
-»  pyenv-matrix.sh "python run_tests.py" | concurry -v
+»  pyenv-matrix "python run_tests.py" | concurry -v
 2020/04/12 21:13:47 Executing ' zsh -c python3.9 run_tests.py '
 2020/04/12 21:13:47 Executing ' zsh -c python3.5 run_tests.py '
 2020/04/12 21:13:47 Executing ' zsh -c python2.7 run_tests.py '

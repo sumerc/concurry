@@ -1,6 +1,9 @@
 #!/bin/bash
 
 cmd=$@
+
+# TODO: No cmd passed?
+
 pyenv_versions=$(pyenv versions --bare)
 #pyenv local $pyenv_versions
 
