@@ -2,8 +2,7 @@
 
 cmd=$@
 pyenv_versions=$(pyenv versions --bare)
-echo $cmd
-pyenv local $pyenv_versions
+#pyenv local $pyenv_versions
 
 for pyenv_version in ${pyenv_versions[*]}; do
     pyenv_version="$(echo $pyenv_version | cut -c-3)"
