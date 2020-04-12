@@ -28,6 +28,7 @@ python2.7 run_tests.py;
 python3.5 run_tests.py;
 python3.6 run_tests.py;
 python3.9 run_tests.py;
+»  pyenv local --unset
 ```
 
 Feed above output to concurry:
