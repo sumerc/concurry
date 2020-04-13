@@ -36,8 +36,11 @@ func RunCmd(command string, wg *sync.WaitGroup) string {
 		}
 
 		cmd = exec.Command(parentProcessName, "-c", command)
-	} else {
-		// TODO: Windows Invoke is different?
+	} else if runtime.GOOS == "windows" {
+		if parentProcessName == "cmd.exe" {
+			//
+		}
+
 	}
 	out, err := cmd.CombinedOutput()
 
