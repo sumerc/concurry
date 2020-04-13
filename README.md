@@ -4,6 +4,8 @@
 
 ### Run commands concurrently (separated by semicolon)
 
+Feed a command string to concurry.
+
 ```bash
 »  echo 'sleep 1 | echo "1" ; sleep 2 | echo "2"' | concurry
 2020/04/12 20:52:11 Executing ' zsh -c sleep 2 | echo "2" '
