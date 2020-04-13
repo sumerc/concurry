@@ -30,18 +30,21 @@ func RunCmd(command string, wg *sync.WaitGroup) string {
 	defer wg.Done()
 
 	var cmd *exec.Cmd
-	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" {
+	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
 		if *config.verbose {
 			log.Println("Executing '", parentProcessName, "-c", command, "'")
 		}
 
-		cmd = exec.Command(parentProcessName, "-c", command)
-	} else if runtime.GOOS == "windows" {
-		if parentProcessName == "cmd.exe" {
-			//
-		}
+		// TODO: Change -c switch maybe?
+		// if parentProcessName == "cmd.exe" {
+		// 	//
+		// }
 
+		cmd = exec.Command(parentProcessName, "-c", command)
+	} else {
+		log.Fatalf("Unsupported platform. [%s]", runtime.GOOS)
 	}
+
 	out, err := cmd.CombinedOutput()
 
 	// if exitError, ok := err.(*exec.ExitError); ok {
