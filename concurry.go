@@ -35,7 +35,7 @@ func RunCmd(command string, wg *sync.WaitGroup) string {
 
 		commandArr := strings.Split(command, " ")
 		if *config.verbose {
-			log.Println("Executing '", commandArr)
+			log.Println("Executing ", commandArr)
 		}
 		cmd = exec.Command(commandArr[0], commandArr[1:]...)
 
@@ -84,11 +84,22 @@ func main() {
 	flag.Parse()
 
 	reader := bufio.NewReader(os.Stdin)
-	command, err := reader.ReadString('\n')
-	if err != nil {
-		log.Fatalf("Stdin could not be read. [%s]", err)
-	}
+	commands := []string{}
+	for {
+		command, _ := reader.ReadString('\n')
+		
+		// if err != nil {
+		// 	log.Fatalf("Stdin could not be read. [%s]", err)
+		// }
 
+		// EOF?
+		if len(command) == 0 {
+			break
+		}
+
+		commands = append(commands, command)
+	}
+	log.Println(commands)
 	// // get parent process name
 	//process, err := ps.FindProcess(os.Getppid())
 	// if err != nil {
@@ -96,7 +107,7 @@ func main() {
 	// }
 	// parentProcessName = process.Executable()
 
-	commands := strings.Split(command, ";")
+	//commands := strings.Split(command, ";")
 
 	for i := uint(0); i < *config.repeatCount; i++ {
 		for _, command := range commands {

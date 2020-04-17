@@ -8,9 +8,8 @@ pyenv_versions=$(pyenv versions --bare)
 #pyenv local $pyenv_versions
 
 for pyenv_version in ${pyenv_versions[*]}; do
-    pyenv_version="$(echo $pyenv_version | cut -c-3)"
-    new_cmd=${cmd//python/python$pyenv_version}
-    echo -n "$new_cmd;"
+    #pyenv_version="$(echo $pyenv_version | cut -c-3)"
+    pyenv_version=$(pyenv root)/versions/$pyenv_version/bin/python
+    new_cmd=${cmd//python/$pyenv_version}
+    echo $new_cmd
 done
-
-echo ""
