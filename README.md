@@ -24,6 +24,10 @@ With concurry running concurrent tests locally via pyenv becomes pretty easy:
 pyenv-matrix "python -m unittest discover" | concurry
 ```
 
+I know there are already lots of good software doing this kind of work already but 
+I would especially want to specialize on generating a better/cleaner output with maybe
+colors and maybe some UI work in the future via ncurses... Not sure.
+
 And did I mention it colorizes the commands and their outputs?
 
 I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
