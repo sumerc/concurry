@@ -96,15 +96,15 @@ func RunCmd(command string, taskId int, wg *sync.WaitGroup, color string) {
 	stderrScanner := bufio.NewScanner(stderrReader)
 	init := make(chan bool)
 
-	// stderr shall be read everytime because if an error happens, we would like
-	// to print it out.
-	go func() {
-		init <- true
-		for stderrScanner.Scan() {
-			log.Println(taskLogger.Sprintf(stderrScanner.Text()))
-		}
-	}()
-	<-init
+	if *config.displayOutput {
+		go func() {
+			init <- true
+			for stderrScanner.Scan() {
+				log.Println(taskLogger.Sprintf(stderrScanner.Text()))
+			}
+		}()
+		<-init
+	}
 
 	cmd.Start()
 	if *config.displayOutput {
