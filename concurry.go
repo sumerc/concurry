@@ -2,14 +2,15 @@ package main
 
 import (
 	"bufio"
+	"container/ring"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 	"sync"
+	"time"
 )
 
 type Config struct {
@@ -21,58 +22,104 @@ type Config struct {
 }
 
 var config Config
+var colors = ring.New(6)
+var colorMutex = &sync.Mutex{}
+var results = []string{}
+var resultsMutex = &sync.Mutex{}
+var colorReset = "\033[0m"
 
-//var parentProcessName string
+// initColorRing initializes an array containing color codes for terminals to
+// output different colors for different Commands.
+func initColorRing() {
+	r := colors
+	r.Value = "\033[31m" // red
+	r = r.Next()
+	r.Value = "\033[32m" // green
+	r = r.Next()
+	r.Value = "\033[33m" // yellow
+	r = r.Next()
+	r.Value = "\033[34m" // blue
+	r = r.Next()
+	r.Value = "\033[35m" // purple
+	r = r.Next()
+	r.Value = "\033[36m" // cyan
+}
+
+func getColor() string {
+	colorMutex.Lock()
+	defer colorMutex.Unlock()
+	colors = colors.Next()
+	return colors.Value.(string)
+}
 
 // RunCmd TODO: Comment
 // Note: log.Println() functions are goroutine safe. There is mutex involved when
 // write() is called.
-func RunCmd(command string, wg *sync.WaitGroup) string {
+func RunCmd(command string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	var cmd *exec.Cmd
-	if runtime.GOOS == "linux" || runtime.GOOS == "darwin" || runtime.GOOS == "windows" {
+	color := getColor()
+	startTime := time.Now()
 
-		commandArr := strings.Split(command, " ")
-		if *config.verbose {
-			log.Println("Executing ", commandArr)
-		}
-		cmd = exec.Command(commandArr[0], commandArr[1:]...)
-
-	} else {
-		log.Fatalf("Unsupported platform. [%s]", runtime.GOOS)
+	commandArr := strings.Split(command, " ")
+	if *config.verbose {
+		log.Println("Executing ", commandArr)
 	}
+	cmd := exec.Command(commandArr[0], commandArr[1:]...)
 
-	out, err := cmd.CombinedOutput()
+	stdoutReader, _ := cmd.StdoutPipe()
+	stderrReader, _ := cmd.StderrPipe()
+	stdoutScanner := bufio.NewScanner(stdoutReader)
+	stderrScanner := bufio.NewScanner(stderrReader)
+	init := make(chan bool)
 
-	// if exitError, ok := err.(*exec.ExitError); ok {
-	// 	fmt.Printf("Exit code is %d\n", exitError.ExitCode())
-	// }
+	// stderr shall be read everytime because if an error happens, we would like
+	// to print it out.
+	go func() {
+		init <- true
+		for stderrScanner.Scan() {
+			log.Println(color, stderrScanner.Text(), colorReset)
+		}
+	}()
+	<-init
 
-	outStr := string(out)
+	cmd.Start()
+	if *config.displayOutput {
+		for stdoutScanner.Scan() {
+			log.Println(color, stdoutScanner.Text(), colorReset)
+		}
+	}
+	err := cmd.Wait()
+
 	if err != nil {
-		log.Println(fmt.Sprintf("Command %s failed.", command))
-		log.Println(outStr)
+		failure := fmt.Sprintf("%s'%s' failed. [%s] [%s] %s", color, command,
+			err, time.Since(startTime), colorReset)
 
 		if *config.failFast {
+			log.Println(failure)
 			os.Exit(1)
 		}
 
+		resultsMutex.Lock()
+		results = append(results, failure)
+		resultsMutex.Unlock()
+
 	} else {
 		if *config.verbose {
-			log.Println(fmt.Sprintf("Command %s succeeded.", command))
-		}
-
-		if *config.displayOutput {
-			log.Println(outStr)
+			resultsMutex.Lock()
+			results = append(results, fmt.Sprintf("%s'%s' succeeded. [%s] %s", color, command,
+				time.Since(startTime), colorReset))
+			resultsMutex.Unlock()
 		}
 	}
-
-	return outStr
 }
 
 func main() {
 	var wg sync.WaitGroup
+
+	startTime := time.Now()
+
+	initColorRing()
 
 	// TODO: Ability to set custom shell
 	//config.cmd = flag.String("cmd", "", "command to be run")
@@ -87,10 +134,6 @@ func main() {
 	commands := []string{}
 	for {
 		command, _ := reader.ReadString('\n')
-		
-		// if err != nil {
-		// 	log.Fatalf("Stdin could not be read. [%s]", err)
-		// }
 
 		// EOF?
 		if len(command) == 0 {
@@ -99,15 +142,6 @@ func main() {
 
 		commands = append(commands, command)
 	}
-	log.Println(commands)
-	// // get parent process name
-	//process, err := ps.FindProcess(os.Getppid())
-	// if err != nil {
-	// 	log.Fatalf("No Parent PID. [%s]", err)
-	// }
-	// parentProcessName = process.Executable()
-
-	//commands := strings.Split(command, ";")
 
 	for i := uint(0); i < *config.repeatCount; i++ {
 		for _, command := range commands {
@@ -119,4 +153,12 @@ func main() {
 		}
 		wg.Wait()
 	}
+
+	// when we come here, all commands finish executing, so it is safe to read
+	// results without a Lock
+	for _, result := range results {
+		log.Println(result)
+	}
+
+	log.Println(fmt.Sprintf("Total elapsed: %s", time.Since(startTime)))
 }
