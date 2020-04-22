@@ -17,7 +17,7 @@ Please feel free to help in any way :)
 And did I mention it colorizes the commands and their outputs:
 
 <p align="center">
-    <img src="https://raw.githubusercontent.com/sumerc/concurry/master/screenshot.png" alt="concurry">
+    <img src="https://github.com/sumerc/concurry/blob/master/screenshot.png?raw=true" alt="concurry">
 </p>
 
 ## Examples:
