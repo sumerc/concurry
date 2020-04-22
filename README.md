@@ -4,7 +4,7 @@
 
 <h1 align="center">concurry</h1>
 <p align="center">
-    Run your bash commands in parallel (with some nifty options and colors)
+    Run your terminal commands in parallel (with some nifty options and colors)
 </p>
 
 ## Motivation
