@@ -49,6 +49,7 @@ Please: this is only intended for personal usage, so feel free to help in any wa
 2020/04/22 23:05:41 (Task-2) Executing 'sleep 1'
 2020/04/22 23:05:42 (Task-1) 'sleep 1' succeeded. [1.001172707s]
 2020/04/22 23:05:42 (Task-2) 'sleep 1' succeeded. [1.001278251s]
+2020/04/22 23:05:42 Total elapsed: 2.004980207s
 ```
 
 ### Run multiple commands concurrently
