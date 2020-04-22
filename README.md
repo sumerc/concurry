@@ -1,4 +1,13 @@
-# concurry
+<p align="center">
+    <img src="https://github.com/sumerc/concurry/blob/master/screenshot.png?raw=true" alt="concurry">
+</p>
+
+<h1 align="center">concurry</h1>
+<p align="center">
+    Run your bash commands in parallel (with some nifty options and colors)
+</p>
+
+## Motivation
 
 This software is generally intended for personal usage. I happen to run lots of
 concurrent scripts in terminal with various requirements. This is especially true
@@ -11,11 +20,7 @@ With concurry running concurrent tests locally via pyenv becomes pretty easy:
 pyenv-matrix "python -m unittest discover" | concurry
 ```
 
-And did I mention it colorizes the commands and their outputs:
-
-<p align="center">
-    <img src="https://github.com/sumerc/concurry/blob/master/screenshot.png?raw=true" alt="concurry">
-</p>
+And did I mention it colorizes the commands and their outputs?
 
 I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
 Please feel free to help in any way :)
