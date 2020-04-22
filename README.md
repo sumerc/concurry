@@ -5,20 +5,20 @@ concurrent scripts in terminal with various requirements. This is especially tru
 when you maintain a [Python library](https://github.com/sumerc/yappi) that aims to run on all supported Python 
 versions. I run unittests on different versions of Python(via pyenv) all the time.
 
-With concurry running concurrent tests locally via pyenv becomes pretty git pueasy:
+With concurry running concurrent tests locally via pyenv becomes pretty easy:
 
 ```bash
 pyenv-matrix "python -m unittest discover" | concurry
 ```
-
-I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
-Please feel free to help in any way :)
 
 And did I mention it colorizes the commands and their outputs:
 
 <p align="center">
     <img src="https://github.com/sumerc/concurry/blob/master/screenshot.png?raw=true" alt="concurry">
 </p>
+
+I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
+Please feel free to help in any way :)
 
 ## Examples:
 
