@@ -7,6 +7,10 @@
     Run your terminal commands in parallel (with some nifty options and colors)
 </p>
 
+![version: 1.0](https://img.shields.io/badge/version-1.0-green.svg?style=flat-square)
+![language: bash](https://img.shields.io/badge/language-bash-blue.svg?style=flat-square) 
+![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) 
+
 ## Motivation
 
 This software is generally intended for personal usage. I happen to run lots of
