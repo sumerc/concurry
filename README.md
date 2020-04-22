@@ -5,7 +5,7 @@ concurrent scripts in terminal with various requirements. This is especially tru
 when you maintain a [Python library](https://github.com/sumerc/yappi) that aims to run on all supported Python 
 versions. I run unittests on different versions of Python(via pyenv) all the time.
 
-With concurry running concurrent tests locally via pyenv becomes pretty easy:
+With concurry running concurrent tests locally via pyenv becomes pretty git pueasy:
 
 ```bash
 pyenv-matrix "python -m unittest discover" | concurry
