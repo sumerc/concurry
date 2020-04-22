@@ -14,6 +14,12 @@ pyenv-matrix "python -m unittest discover" | concurry
 I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
 Please feel free to help in any way :)
 
+And did I mention it colorizes the commands and their outputs:
+
+<p align="center">
+    <img src="https://raw.githubusercontent.com/sumerc/concurry/master/screenshot.png" alt="concurry">
+</p>
+
 ## Examples:
 
 ### Repeat commands (both syncronously and concurrently)
