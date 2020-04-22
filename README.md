@@ -8,7 +8,7 @@
 </p>
 
 ![version: 1.0](https://img.shields.io/badge/version-1.0-green.svg?style=flat-square)
-![language: bash](https://img.shields.io/badge/language-bash-blue.svg?style=flat-square) 
+![language: go](https://img.shields.io/badge/language-go-blue.svg?style=flat-square) 
 ![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) 
 
 ## Motivation
