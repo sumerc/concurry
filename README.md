@@ -1,24 +1,37 @@
-# concurry
+<p align="center">
+    <img src="https://github.com/sumerc/concurry/blob/master/screenshot.png?raw=true" alt="concurry">
+</p>
+
+<h1 align="center">concurry</h1>
+<p align="center">
+    Run your terminal commands in parallel (with some nifty options and colors)
+</p>
+
+![version: 1.0](https://img.shields.io/badge/version-1.0-green.svg?style=flat-square)
+![language: bash](https://img.shields.io/badge/language-bash-blue.svg?style=flat-square) 
+![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square) 
+
+## Motivation
 
 This software is generally intended for personal usage. I happen to run lots of
 concurrent scripts in terminal with various requirements. This is especially true
 when you maintain a [Python library](https://github.com/sumerc/yappi) that aims to run on all supported Python 
 versions. I run unittests on different versions of Python(via pyenv) all the time.
 
-With concurry running concurrent tests locally via pyenv becomes pretty git pueasy:
+With concurry running concurrent tests locally via pyenv becomes pretty easy:
 
 ```bash
 pyenv-matrix "python -m unittest discover" | concurry
 ```
 
+I know there are already lots of good software doing this kind of work already but 
+I would especially want to specialize on generating a better/cleaner output with maybe
+colors and maybe some UI work in the future via ncurses... Not sure.
+
+And did I mention it colorizes the commands and their outputs?
+
 I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
-Please feel free to help in any way :)
-
-And did I mention it colorizes the commands and their outputs:
-
-<p align="center">
-    <img src="https://github.com/sumerc/concurry/blob/master/screenshot.png?raw=true" alt="concurry">
-</p>
+Please: this is only intended for personal usage, so feel free to help in any way :)
 
 ## Examples:
 
