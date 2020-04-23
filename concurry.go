@@ -24,6 +24,7 @@ type configType struct {
 	repeatCount      *uint
 	repeatConcurrent *bool
 	commandTimeout   *uint64
+	xargsMode        *bool
 }
 
 // TODO:
@@ -158,6 +159,7 @@ func main() {
 
 	config.displayStdout = flag.Bool("o", true, "display stdout")
 	config.displayStderr = flag.Bool("e", true, "display stderr")
+	config.xargsMode = flag.Bool("x", false, "disables all concurrency and run commands like xargs")
 	//config.bufferIO = flag.Bool("b", false, "buffer stdout/stderr") // TODO
 	config.verbose = flag.Bool("v", true, "show executed command and return values")
 	config.repeatCount = flag.Uint("n", 1, "repeat command N times (synchronously)")
@@ -189,13 +191,18 @@ func main() {
 				wg.Add(1)
 				taskID++
 				go RunCmd(command, taskID, &wg, getNextColor())
+
+				if *config.xargsMode {
+					wg.Wait()
+				}
 			}
 		}
-		if !*config.repeatConcurrent {
+		if !*config.repeatConcurrent || *config.xargsMode {
 			wg.Wait()
 		}
 	}
 
+	// everything might be concurrent above so we wait here at the end
 	wg.Wait()
 
 	// when we come here, all commands finish executing, so it is safe to read
