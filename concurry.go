@@ -14,7 +14,7 @@ import (
 	"time"
 )
 
-type Config struct {
+type configType struct {
 	displayOutput    *bool
 	verbose          *bool
 	failFast         *bool
@@ -29,7 +29,7 @@ type Config struct {
 // 	colorReset
 // }
 
-var config Config
+var config configType
 var colors = ring.New(6)
 var results = []string{}
 var resultsMutex = &sync.Mutex{}
@@ -52,21 +52,21 @@ func initColorRing() {
 	r.Value = "\033[36m" // cyan
 }
 
-func GetNextColor() string {
+func getNextColor() string {
 	colors = colors.Next()
 	return colors.Value.(string)
 }
 
-type TaskLogger struct {
-	taskId int
+type taskLogger struct {
+	taskID int
 	color  string
 }
 
-func (t TaskLogger) Sprintf(format string, args ...interface{}) string {
+func (t taskLogger) Sprintf(format string, args ...interface{}) string {
 	if *config.colorize {
-		format = fmt.Sprintf("%s(Task-%d) %s%s", t.color, t.taskId, format, colorReset)
+		format = fmt.Sprintf("%s(Task-%d) %s%s", t.color, t.taskID, format, colorReset)
 	} else {
-		format = fmt.Sprintf("(Task-%d) %s", t.taskId, format)
+		format = fmt.Sprintf("(Task-%d) %s", t.taskID, format)
 	}
 	return fmt.Sprintf(format, args...)
 }
@@ -74,20 +74,19 @@ func (t TaskLogger) Sprintf(format string, args ...interface{}) string {
 // RunCmd TODO: Comment
 // Note: log.Println() functions are goroutine safe. There is mutex involved when
 // write() is called.
-func RunCmd(command string, taskId int, wg *sync.WaitGroup, color string) {
+func RunCmd(command string, taskID int, wg *sync.WaitGroup, color string) {
 	defer wg.Done()
 
 	startTime := time.Now()
-	taskLogger := TaskLogger{taskId: taskId, color: color}
+	taskLogger := taskLogger{taskID: taskID, color: color}
 
-	commandArr := strings.Split(command, " ")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*config.commandTimeout)*time.Second)
+	defer cancel()
+
 	if *config.verbose {
 		log.Println(taskLogger.Sprintf("Executing '%s'", command))
 	}
-	//cmd := exec.Command(commandArr[0], commandArr[1:]...)
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*config.commandTimeout)*time.Second)
-	defer cancel()
-	cmd := exec.CommandContext(ctx, commandArr[0], commandArr[1:]...)
+	cmd := exec.CommandContext(ctx, "bash", "-c", command)
 
 	stdoutReader, _ := cmd.StdoutPipe()
 	stderrReader, _ := cmd.StderrPipe()
@@ -171,14 +170,14 @@ func main() {
 		commands = append(commands, command)
 	}
 
-	taskId := 0
+	taskID := 0
 	for i := uint(0); i < *config.repeatCount; i++ {
 		for _, command := range commands {
 			command = strings.TrimSpace(command)
 			if len(command) > 0 {
 				wg.Add(1)
-				taskId++
-				go RunCmd(command, taskId, &wg, GetNextColor())
+				taskID++
+				go RunCmd(command, taskID, &wg, getNextColor())
 			}
 		}
 		if !*config.repeatConcurrent {
