@@ -156,9 +156,8 @@ func main() {
 
 	initColorRing()
 
-	config.displayStdout = flag.Bool("o", false, "display stdout")
-	config.displayStderr = flag.Bool("e", false, "display stderr")
-
+	config.displayStdout = flag.Bool("o", true, "display stdout")
+	config.displayStderr = flag.Bool("e", true, "display stderr")
 	//config.bufferIO = flag.Bool("b", false, "buffer stdout/stderr") // TODO
 	config.verbose = flag.Bool("v", true, "show executed command and return values")
 	config.repeatCount = flag.Uint("n", 1, "repeat command N times (synchronously)")
