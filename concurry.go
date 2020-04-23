@@ -7,6 +7,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"strings"
@@ -22,7 +23,7 @@ type configType struct {
 	colorize         *bool
 	repeatCount      *uint
 	repeatConcurrent *bool
-	commandTimeout   *uint
+	commandTimeout   *uint64
 }
 
 // TODO:
@@ -164,7 +165,8 @@ func main() {
 	config.failFast = flag.Bool("f", true, "fail if any concurrent command fails")
 	config.colorize = flag.Bool("c", true, "colorize the command outputs")
 	config.repeatConcurrent = flag.Bool("rc", false, "run repeated commands concurrently")
-	config.commandTimeout = flag.Uint("t", 60, "timeout for executed command (secs)")
+	// used MaxUint32 to prevent overflow when multiplied
+	config.commandTimeout = flag.Uint64("t", math.MaxUint32, "timeout for executed command (secs)")
 	flag.Parse()
 
 	reader := bufio.NewReader(os.Stdin)
