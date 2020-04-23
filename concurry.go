@@ -15,7 +15,8 @@ import (
 )
 
 type configType struct {
-	displayOutput    *bool
+	displayStdout    *bool
+	displayStderr    *bool
 	verbose          *bool
 	failFast         *bool
 	colorize         *bool
@@ -95,18 +96,22 @@ func RunCmd(command string, taskID int, wg *sync.WaitGroup, color string) {
 	stderrScanner := bufio.NewScanner(stderrReader)
 	init := make(chan bool)
 
-	if *config.displayOutput {
-		go func() {
-			init <- true
-			for stderrScanner.Scan() {
+	stdErrOutput := ""
+	go func() {
+		init <- true
+		for stderrScanner.Scan() {
+			if *config.displayStderr {
 				log.Println(taskLogger.Sprintf(stderrScanner.Text()))
+			} else {
+				// we might print this on failure
+				stdErrOutput += taskLogger.Sprintf(stderrScanner.Text()) + "\n"
 			}
-		}()
-		<-init
-	}
+		}
+	}()
+	<-init
 
 	cmd.Start()
-	if *config.displayOutput {
+	if *config.displayStdout {
 		for stdoutScanner.Scan() {
 			log.Println(taskLogger.Sprintf(stdoutScanner.Text()))
 		}
@@ -117,7 +122,10 @@ func RunCmd(command string, taskID int, wg *sync.WaitGroup, color string) {
 		errStr := fmt.Sprintf("%s", err)
 		if ctx.Err() == context.DeadlineExceeded {
 			errStr = "Task Timeout"
+		} else {
+			log.Println(stdErrOutput)
 		}
+
 		failure := taskLogger.Sprintf("'%s' failed. [%s] [%s]", command,
 			errStr, time.Since(startTime))
 
@@ -147,7 +155,9 @@ func main() {
 
 	initColorRing()
 
-	config.displayOutput = flag.Bool("o", false, "display stdout")
+	config.displayStdout = flag.Bool("o", false, "display stdout")
+	config.displayStderr = flag.Bool("e", false, "display stderr")
+
 	//config.bufferIO = flag.Bool("b", false, "buffer stdout/stderr") // TODO
 	config.verbose = flag.Bool("v", true, "show executed command and return values")
 	config.repeatCount = flag.Uint("n", 1, "repeat command N times (synchronously)")
