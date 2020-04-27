@@ -103,10 +103,10 @@ func RunCmd(command string, taskID int, wg *sync.WaitGroup, color string) {
 		init <- true
 		for stderrScanner.Scan() {
 			if *config.displayStderr {
-				log.Println(taskLogger.Sprintf(stderrScanner.Text()))
+				log.Println(taskLogger.Sprintf("%s", stderrScanner.Text()))
 			} else {
 				// we might print this on failure
-				stdErrOutput += taskLogger.Sprintf(stderrScanner.Text()) + "\n"
+				stdErrOutput += taskLogger.Sprintf("%s", stderrScanner.Text()) + "\n"
 			}
 		}
 	}()
@@ -115,7 +115,7 @@ func RunCmd(command string, taskID int, wg *sync.WaitGroup, color string) {
 	cmd.Start()
 	if *config.displayStdout {
 		for stdoutScanner.Scan() {
-			log.Println(taskLogger.Sprintf(stdoutScanner.Text()))
+			log.Println(taskLogger.Sprintf("%s", stdoutScanner.Text()))
 		}
 	}
 	err := cmd.Wait()
