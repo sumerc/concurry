@@ -89,6 +89,12 @@ func RunCmd(command string, taskID int, wg *sync.WaitGroup, color string) {
 	if *config.verbose {
 		log.Println(taskLogger.Sprintf("Executing '%s'", command))
 	}
+	// We used bash here as command may contain commands that contains single/double
+	// quotes in them like python -c '......'. In that case, shell is responsible for
+	// parsing those correctly as a simply string.Split will not suffice. That is why
+	// we leave argument parsing to shell
+	// TODO: A better solution might be to detect the current running shell and run
+	// the command under that shell.
 	cmd := exec.CommandContext(ctx, "bash", "-c", command)
 
 	stdoutReader, _ := cmd.StdoutPipe()
