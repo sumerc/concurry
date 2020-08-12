@@ -13,8 +13,7 @@
 
 ## Motivation
 
-This software is generally intended for personal usage. I happen to run lots of
-concurrent scripts in terminal with various requirements. This is especially true
+I happen to run lots of concurrent scripts in terminal with various requirements. This is especially true
 when you maintain a [Python library](https://github.com/sumerc/yappi) that aims to run on all supported Python 
 versions. I run unittests on different versions of Python(via pyenv) all the time.
 
