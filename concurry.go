@@ -168,7 +168,7 @@ func main() {
 	config.xargsMode = flag.Bool("x", false, "disables all concurrency and run commands like xargs")
 	//config.bufferIO = flag.Bool("b", false, "buffer stdout/stderr") // TODO
 	config.verbose = flag.Bool("v", true, "show executed command and return values")
-	config.repeatCount = flag.Uint("n", 1, "repeat command N times (synchronously)")
+	config.repeatCount = flag.Uint("n", 1, "repeat command N times (default: synchronous, or asynchronous if -rc is set)")
 	config.failFast = flag.Bool("f", true, "fail if any concurrent command fails")
 	config.colorize = flag.Bool("c", true, "colorize the command outputs")
 	config.repeatConcurrent = flag.Bool("rc", false, "run repeated commands concurrently")
