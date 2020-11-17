@@ -29,9 +29,6 @@ colors and maybe some UI work in the future via ncurses... Not sure.
 
 And did I mention it colorizes the commands and their outputs?
 
-I am pretty sure there are lots of issues like string quotes not handled correctly...etc.
-Please: this is only intended for personal usage, so feel free to help in any way :)
-
 ## Examples:
 
 ### Repeat commands (both syncronously and concurrently)
